@@ -4,148 +4,171 @@ breed [scouts scout]
 followers-own [
   flockmates
   nearest-neighbor
-
-
   turn-amount
-  local_speed
+  speed
 ]
 
 scouts-own [
-  speed]
+  speed
+]
 
 
 globals [
   old-hive-x old-hive-y    ;; location of old hive
   new-hive-x new-hive-y    ;; location of new hive
+
+  old-hive-x-offset old-hive-y-offset
+  new-hive-x-offset new-hive-y-offset
+
+  target-distance
+
+  flock-radius
+  minimum-separation
+  max-align-turn
+  max-separate-turn
+  max-cohere-turn
 ]
 
 to setup
   clear-all
-  set old-hive-x 100 + min-pxcor                      ;; set up nest and food locations
-  set old-hive-y 100
-  set new-hive-x max-pxcor - 50
-  set new-hive-y -130
-  ;; draw the nest in brown by stamping a circular
-  ;; brown turtle
+
+  ; Area is centered
+  ; ------------------------------
+  ;|min_x, max_y .... max_x, max_y|
+  ;| .............................|
+  ;| ............0,0..............|
+  ;| .............................|
+  ;|min_x, min_y .... max_x, min_y|
+  ; ------------------------------
+  set old-hive-x-offset 50
+  set old-hive-y-offset 50
+  set old-hive-x min-pxcor + old-hive-x-offset
+  set old-hive-y max-pycor - old-hive-y-offset
+
+  set new-hive-x-offset 50
+  set new-hive-y-offset 50
+  set new-hive-x max-pxcor - new-hive-x-offset
+  set new-hive-y min-pycor + new-hive-y-offset
+
+  ; Color old hive in brown
   ask patch old-hive-x old-hive-y [
     sprout 1 [
       set color brown
-      set shape "circle"
-      set size 20
+      set shape "house"
+      set size 10
       stamp
       die
     ]
   ]
 
+  ; Color new hive in yellow
   ask patch new-hive-x new-hive-y [
     sprout 1 [
-      set color orange
-      set shape "circle"
-      set size 20
+      set color yellow
+      set shape "flag"
+      set size 10
       stamp
       die
     ]
   ]
 
-create-followers population
-    [ set color yellow - 2 + random 7  ;; random shades look nice
-      set size 1.5  ;; easier to see
-      set shape "person"
-      setxy old-hive-x + random-float 200 - 100 old-hive-y - random-float 100 + 50
+  create-followers population
+    [
+      set color yellow - 2 + random 7  ;; Random shades look nice
+      set size 1.5  ;; Easier to see
+      set shape "bug"
+      ; Randomization of the start position
+      setxy old-hive-x + random-float (old-hive-x-offset * 2) - old-hive-x-offset old-hive-y - random-float (old-hive-y-offset * 2) + old-hive-y-offset
       set flockmates no-turtles
-      set local_speed random-float 0.5
-  ]
+      set speed random-float 0.5
+    ]
 
 
-create-scouts (percent-of-scouts / 100) * population
-  [set color blue
-    set size 5
-    set shape "bee"
-    setxy old-hive-x + random-float 200 - 100 old-hive-y - random-float 100 + 50
-    set speed choose_speed * 0.5]
+  create-scouts (percent-of-scouts / 100) * population
+    [
+      set color blue
+      set size 5
+      set shape "bee"
+      ; Randomization of the start position
+      setxy old-hive-x + random-float (old-hive-x-offset * 2) - old-hive-x-offset old-hive-y - random-float (old-hive-y-offset * 2) + old-hive-y-offset
+      set speed scout-speed
+    ]
+
+  ; Utils
+  set target-distance 10
+
+  set flock-radius 100
+  set minimum-separation 1
+  set max-separate-turn 0.5
+  set max-align-turn 15
+  set max-cohere-turn 30
+
   reset-ticks
 end
 
 
 to go
-  ask scouts [face-home]
+  ; Stopping criterion
   if all? turtles [xcor >= new-hive-x]
-  [stop]
-  ask scouts[go-new-home]
-  ask followers [flock]
-  repeat 5 [ ask followers [ fd local_speed ] display ]
+    [ stop ]
+  ; Moving forward for scouts
+  ask scouts [ go-new-home ]
+  ; Followers' movement
+  ask followers [ flock ]
+  ; ?
+  repeat 5 [ ask followers [ fd speed ] display ]
   tick
 end
 
-to face-home
-  (facexy new-hive-x new-hive-y)
-end
 
 to go-new-home
-  ;correct-path
-  ;if (xcor > (new-hive-x - 300)) ;;or (ycor > (new-hive-x - 75)))
-   ;   [facexy new-hive-x new-hive-y]
-    if xcor < new-hive-x [
-      fd speed]
+    ; Correct orientation
+    facexy new-hive-x new-hive-y
+    ; Forward movement
+    ; Die when reaching the hive
+    ifelse sqrt ((xcor - new-hive-x) ^ 2 + (ycor - new-hive-y) ^ 2) > target-distance
+      [ fd speed ]
+      [ die ]
 end
 
-;to follow-scout
-;  let nearby-scouts turtles with [scout? and distance myself < 30]
-;  if any? nearby-scouts [
-;    face min-one-of nearby-scouts [distance myself]
-;    fd 1
-;  ]
-;end
-
-to flock  ;; turtle procedure
+to flock
+  ; Flock mechanism
   find-flockmates
   if any? flockmates
     [ find-nearest-neighbor
-      ifelse distance nearest-neighbor < 10
+      ifelse distance nearest-neighbor < minimum-separation
         [ avoid ]
-        ;[ align
-          [ cohere] ]
+        [ align
+          cohere ]
+    ]
+  ; Random movement
+
 end
 
-to find-flockmates  ;; turtle procedure
-  set flockmates other turtles in-radius 100
-end
-
-to-report temp-in-radius [agentset r]
-  report (agentset with [ distance myself <= 100 ])
+to find-flockmates
+  set flockmates other turtles in-radius flock-radius
 end
 
 
-to find-nearest-neighbor ;; turtle procedure
+to find-nearest-neighbor
   set nearest-neighbor min-one-of flockmates [distance myself]
 end
 
-to avoid  ;; turtle procedure
-  turn-away ([heading] of nearest-neighbor) 1.5
+; AVOID
+
+to avoid
+  turn-away ([heading] of nearest-neighbor) max-separate-turn
 end
 
-to turn-away [new-heading max-turn]  ;; turtle procedure
-  turn-at-most (subtract-headings heading new-heading) max-turn
+; ALIGN
+
+to align
+  ; set local_speed max-one-of flockmates [speed]
+  ; set heading max-one-of flockmates [speed]
+  turn-towards average-flockmate-heading max-align-turn
 end
 
-to turn-at-most [turn max-turn]  ;; turtle procedure
-  ifelse abs turn > max-turn
-    [ ifelse turn > 0
-        [ rt max-turn ]
-        [ lt max-turn ] ]
-    [ rt turn ]
-end
-
-to turn-towards [new-heading max-turn]  ;; turtle procedure
-  turn-at-most (subtract-headings new-heading heading) max-turn
-end
-
-;to align
- ; set local_speed max-one-of flockmates [speed]
-  ;set heading max-one-of flockmates [speed]
-;end
-
-to-report average-flockmate-heading  ;; turtle procedure
+to-report average-flockmate-heading
   ;; We can't just average the heading variables here.
   ;; For example, the average of 1 and 359 should be 0,
   ;; not 180.  So we have to use trigonometry.
@@ -156,9 +179,9 @@ to-report average-flockmate-heading  ;; turtle procedure
     [ report atan x-component y-component ]
 end
 
-;;; COHERE
+; COHERE
 
-to cohere  ;; turtle procedure
+to cohere
   turn-towards average-heading-towards-flockmates 3
 end
 
@@ -173,24 +196,38 @@ to-report average-heading-towards-flockmates  ;; turtle procedure
     [ report atan x-component y-component ]
 end
 
+; HELPERS
 
-;to correct-path
-  ;ifelse heading > 180
-    ;[ rt 180 ]
-    ;[ if patch-at 0 5 = nobody
-      ;  [ rt 100 ]
-     ;if patch-at 0 5 = nobody
-      ;  [ lt 100 ] ]
-;end
+to turn-towards [new-heading max-turn]  ;; turtle procedure
+  turn-at-most (subtract-headings new-heading heading) max-turn
+end
+
+to turn-away [new-heading max-turn]  ;; turtle procedure
+  turn-at-most (subtract-headings heading new-heading) max-turn
+end
+
+;; turn right by "turn" degrees (or left if "turn" is negative),
+;; but never turn more than "max-turn" degrees
+to turn-at-most [turn max-turn]  ;; turtle procedure
+  ifelse abs turn > max-turn
+    [ ifelse turn > 0
+        [ rt max-turn ]
+        [ lt max-turn ] ]
+    [ rt turn ]
+end
+
+; to-report temp-in-radius [agentset r]
+  ; report (agentset with [ distance myself <= 100 ])
+; end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+329
 10
-1420
-681
+938
+420
 -1
 -1
-2.0
+1.0
 1
 30
 1
@@ -202,8 +239,8 @@ GRAPHICS-WINDOW
 1
 -300
 300
--165
-165
+-200
+200
 0
 0
 1
@@ -236,7 +273,7 @@ population
 population
 0
 1000
-180.0
+60.0
 10
 1
 NIL
@@ -251,7 +288,7 @@ Percent-of-scouts
 Percent-of-scouts
 0
 5
-1.0
+5.0
 1
 1
 NIL
@@ -279,11 +316,11 @@ SLIDER
 322
 202
 355
-choose_speed
-choose_speed
+scout-speed
+scout-speed
 0
 7
-6.1
+2.5
 0.1
 1
 NIL
