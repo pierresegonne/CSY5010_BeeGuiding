@@ -1,6 +1,6 @@
 import numpy as np
 
-from animation import show_swarm_flight
+from animation import show_swarm_flight, show_swarm_flight_scatter
 from bee import Bee, generate_swarm
 
 
@@ -14,7 +14,7 @@ TIME_STEP = 1
 
 # Swarm Info
 SWARM_SIZE = 100
-PROPORTION_SCOUT = 27 # %
+PROPORTION_SCOUT = 30 # %
 
 # Space
 SPACE_DIMENSIONS = (400, 400, 400)
@@ -23,7 +23,7 @@ NEW_HIVE_POSITION = (200, 4000, 200)
 
 # Bee specific
 VISION_RADIUS = 30
-SCOUT_SPEED = 1.55
+SCOUT_SPEED = 1.05
 
 # Bee speed update
 D_MIN = 15
@@ -32,6 +32,10 @@ V_MAX = 1.55
 A_MAX = 0.3
 W_WS = 0.3
 W_DECAY = 0.8
+
+# Save file
+SAVE_FLIGHT = True
+SAVE_FLIGHT_NAME = 'swarm_basic'
 
 
 # ======================================================================
@@ -59,8 +63,9 @@ for iteration in range(MAX_ITERATIONS):
 
 # ===========
 
-show_swarm_flight(
+show_swarm_flight_scatter(
     OLD_HIVE_POSITION, NEW_HIVE_POSITION, swarm.recorded_positions,
     SPACE_DIMENSIONS,
     int(SWARM_SIZE * PROPORTION_SCOUT / 100),
+    save=SAVE_FLIGHT, save_filename=SAVE_FLIGHT_NAME
 )
