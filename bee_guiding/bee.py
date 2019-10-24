@@ -132,12 +132,15 @@ class Scout(Bee):
         self.__center_around_circle = None
         self.__theta = None
 
+        self.__finished_around = 0
+        self.__min_iteration_two_around = 30
+
     def inform_about_swarm(self, swarm_size, number_scouts):
         self.swarm_size = swarm_size
         self.number_scouts = number_scouts
 
     def compute_around_angle_properties(self):
-        self.__around_angle = self.speed_norm / (self.swarm_size/2) # Hoping the swarm span is swarmsize/2
+        self.__around_angle = self.speed_norm / (self.swarm_size/2) * 2 # Hoping the swarm span is swarmsize/2
         self.__max_around_step = int(pi / self.__around_angle) + 1 # 1 probably not necessary
 
     def recompute_speed_towards_end_hive(self):
@@ -146,7 +149,7 @@ class Scout(Bee):
 
     def step(self, time_step, neighbours):
         super().step()
-        if (len(neighbours) < self.number_scouts * 1.2) and (self.__mode == self.__streak_mode): # 1.2 is arbitrary
+        if (len(neighbours) < self.number_scouts * 1.2) and (self.__mode == self.__streak_mode) and (self.iteration - self.__finished_around >= self.__min_iteration_two_around): # 1.2 is arbitrary
             # Go back to the back of the swarm
             self.__mode = self.__around_mode
             self.__center_around_circle = self.position - (self.speed/np.linalg.norm(self.speed)) * (self.swarm_size/2)
@@ -158,6 +161,7 @@ class Scout(Bee):
             if self.__around_step >= self.__max_around_step:
                 self.__mode = self.__streak_mode
                 self.recompute_speed_towards_end_hive()
+                self.__finished_around = self.iteration
                 self.__around_step = 0
             # Pursue
             else:

@@ -9,11 +9,11 @@ from bee import Bee, generate_swarm
 # ======================================================================
 
 # Run details
-MAX_ITERATIONS = 500
+MAX_ITERATIONS = 1000
 TIME_STEP = 1
 
 # Swarm Info
-SWARM_SIZE = 100
+SWARM_SIZE = 200
 PROPORTION_SCOUT = 5 # %
 
 # Space
