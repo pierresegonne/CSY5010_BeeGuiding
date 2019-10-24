@@ -1,5 +1,7 @@
 import numpy as np
 
+from math import atan, cos, pi, sin
+
 # ======================================================================
 # ============================= BEES ===================================
 # ======================================================================
@@ -9,6 +11,7 @@ class Bee:
     def __init__(self, id, vision, position, speed):
 
         self.id = id
+        self.iteration = 0
 
         self.vision = vision
 
@@ -17,7 +20,7 @@ class Bee:
 
 
     def step(self):
-        pass
+        self.iteration += 1
 
 
 # ======================================================================
@@ -82,6 +85,7 @@ class UninformedBee(Bee):
         return v_random
 
     def step(self, time_step, neighbours):
+        super().step()
         v_align = self.align(neighbours)
         v_cohere = self.cohere(neighbours)
         v_avoid = self.avoid(neighbours)
@@ -102,21 +106,71 @@ class UninformedBee(Bee):
 
 class Scout(Bee):
 
-    def __init__(self, id, vision, position, speed):
+    def __init__(self, id, vision, position, speed, speed_norm, end_hive_position):
         super().__init__(id, vision, position, speed)
+
+        self.speed_norm = speed_norm
+        self.end_hive_position = np.array(end_hive_position).reshape(-1,1)
+
+        self.swarm_size = None
         self.number_scouts = None
 
         # `streak` or `around`
-        self.mode = 'streak'
+        self.__streak_mode = 'streak'
+        self.__around_mode = 'around'
+        self.__mode = self.__streak_mode
 
-    def step(self, time_step, neighbours, number_scout=0):
-        if len(neighbours) < self.number_scouts * 1.5:
-            # Go back to the back of the swarm
-            time_step = -50*time_step
+        self.__around_direction = None
+        if np.random.random() < 0.5:
+            self.__around_direction = -1
         else:
-            pass
+            self.__around_direction = 1
 
-        self.position = self.position + (self.speed * time_step)
+        self.__around_step = 0
+        self.__max_around_step = None
+        self.__around_angle = None
+        self.__center_around_circle = None
+        self.__theta = None
+
+    def inform_about_swarm(self, swarm_size, number_scouts):
+        self.swarm_size = swarm_size
+        self.number_scouts = number_scouts
+
+    def compute_around_angle_properties(self):
+        self.__around_angle = self.speed_norm / (self.swarm_size/2) # Hoping the swarm span is swarmsize/2
+        self.__max_around_step = int(pi / self.__around_angle) + 1 # 1 probably not necessary
+
+    def recompute_speed_towards_end_hive(self):
+        new_direction = self.end_hive_position - self.position
+        self.speed = self.speed_norm * new_direction / np.linalg.norm(new_direction)
+
+    def step(self, time_step, neighbours):
+        super().step()
+        if (len(neighbours) < self.number_scouts * 1.2) and (self.__mode == self.__streak_mode): # 1.2 is arbitrary
+            # Go back to the back of the swarm
+            self.__mode = self.__around_mode
+            self.__center_around_circle = self.position - (self.speed/np.linalg.norm(self.speed)) * (self.swarm_size/2)
+            self.__theta = atan((self.position[2] - self.__center_around_circle[2]) / (self.position[1] - self.__center_around_circle[1]))
+            self.__around_step = 0
+
+        if self.__mode == self.__around_mode:
+            # If reach the end of the circular trajectory, go back to streak
+            if self.__around_step >= self.__max_around_step:
+                self.__mode = self.__streak_mode
+                self.recompute_speed_towards_end_hive()
+                self.__around_step = 0
+            # Pursue
+            else:
+                self.position = np.array(
+                    [self.__center_around_circle[0] + (self.swarm_size/2)*cos((pi/2) + self.__around_direction * (self.__around_step*self.__around_angle)),
+                    self.__center_around_circle[1] + (self.swarm_size/2)*sin((pi/2) + self.__around_direction * (self.__around_step*self.__around_angle))*cos(self.__theta),
+                    self.__center_around_circle[2] + (self.swarm_size/2)*sin((pi/2) + self.__around_direction * (self.__around_step*self.__around_angle))*sin(self.__theta)]
+                ).reshape(-1,1)
+                self.__around_step += 1
+
+
+        if self.__mode == self.__streak_mode:
+            self.position = self.position + (self.speed * time_step)
 
 # ======================================================================
 # ============================ SWARM ===================================
@@ -170,7 +224,8 @@ class Swarm:
         # Inform all scouts
         for bee_id, bee in self.bees.items():
             if isinstance(bee, Scout):
-                bee.number_scouts = self.number_scouts
+                bee.inform_about_swarm(self.size, self.number_scouts)
+                bee.compute_around_angle_properties()
 
 
 # ======================================================================
@@ -214,7 +269,7 @@ def generate_swarm(
     for index, id in enumerate(ids):
         # Scouts
         if (index < number_scouts):
-            swarm.add_bee(Scout(id, bee_vision, positions[index].reshape((-1,1)), scout_speeds[index].reshape((-1,1))))
+            swarm.add_bee(Scout(id, bee_vision, positions[index].reshape((-1,1)), scout_speeds[index].reshape((-1,1)), scout_speed, end_hive_position))
         # Uninformed
         else:
             swarm.add_bee(UninformedBee(id, bee_vision, positions[index].reshape((-1,1)), speeds[index].reshape((-1,1)), **kwargs))

@@ -13,7 +13,7 @@ MAX_ITERATIONS = 500
 TIME_STEP = 1
 
 # Swarm Info
-SWARM_SIZE = 200
+SWARM_SIZE = 100
 PROPORTION_SCOUT = 5 # %
 
 # Space
@@ -34,8 +34,8 @@ W_WS = 0.3
 W_DECAY = 0.8
 
 # Save file
-SAVE_FLIGHT = False
-SAVE_FLIGHT_NAME = 'swarm_basic'
+SAVE_FLIGHT = True
+SAVE_FLIGHT_NAME = 'swarm_around_basic'
 
 
 # ======================================================================
