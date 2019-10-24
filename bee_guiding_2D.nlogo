@@ -142,7 +142,7 @@ to flock
           cohere ]
     ]
   ; Random movement
-
+  ask followers [ set speed speed + 0.0001 ]
 end
 
 to find-flockmates
@@ -182,7 +182,7 @@ end
 ; COHERE
 
 to cohere
-  turn-towards average-heading-towards-flockmates 3
+  turn-towards average-heading-towards-flockmates max-cohere-turn
 end
 
 to-report average-heading-towards-flockmates  ;; turtle procedure
@@ -273,7 +273,7 @@ population
 population
 0
 1000
-60.0
+110.0
 10
 1
 NIL
@@ -287,8 +287,8 @@ SLIDER
 Percent-of-scouts
 Percent-of-scouts
 0
-5
-5.0
+50
+13.0
 1
 1
 NIL
@@ -320,7 +320,7 @@ scout-speed
 scout-speed
 0
 7
-2.5
+1.6
 0.1
 1
 NIL
