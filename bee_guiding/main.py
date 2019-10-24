@@ -9,12 +9,12 @@ from bee import Bee, generate_swarm
 # ======================================================================
 
 # Run details
-MAX_ITERATIONS = 100
+MAX_ITERATIONS = 500
 TIME_STEP = 1
 
 # Swarm Info
-SWARM_SIZE = 100
-PROPORTION_SCOUT = 30 # %
+SWARM_SIZE = 200
+PROPORTION_SCOUT = 5 # %
 
 # Space
 SPACE_DIMENSIONS = (400, 400, 400)
@@ -23,7 +23,7 @@ NEW_HIVE_POSITION = (200, 4000, 200)
 
 # Bee specific
 VISION_RADIUS = 30
-SCOUT_SPEED = 1.05
+SCOUT_SPEED = 1.55
 
 # Bee speed update
 D_MIN = 15
@@ -34,7 +34,7 @@ W_WS = 0.3
 W_DECAY = 0.8
 
 # Save file
-SAVE_FLIGHT = True
+SAVE_FLIGHT = False
 SAVE_FLIGHT_NAME = 'swarm_basic'
 
 

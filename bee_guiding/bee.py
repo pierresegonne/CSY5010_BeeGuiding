@@ -1,18 +1,33 @@
 import numpy as np
 
+# ======================================================================
+# ============================= BEES ===================================
+# ======================================================================
+
 class Bee:
 
-    def __init__(self, id, is_scout, vision, position, speed,
-        d_min=4, alpha=0.9, v_max=5, a_max=2, w_ws=2, w_decay=0.9):
+    def __init__(self, id, vision, position, speed):
 
         self.id = id
-
-        self.is_scout = is_scout
 
         self.vision = vision
 
         self.position = position
         self.speed = speed
+
+
+    def step(self):
+        pass
+
+
+# ======================================================================
+
+
+class UninformedBee(Bee):
+
+    def __init__(self, id, vision, position, speed,
+        d_min=4, alpha=0.9, v_max=5, a_max=2, w_ws=2, w_decay=0.9):
+        super().__init__(id, vision, position, speed)
 
         self.d_min = d_min
         self.alpha = alpha
@@ -20,7 +35,6 @@ class Bee:
         self.a_max = a_max
         self.w_ws = w_ws
         self.w_decay = w_decay
-
 
     def align(self, neighbours):
         v_align = np.zeros(self.speed.shape)
@@ -68,29 +82,56 @@ class Bee:
         return v_random
 
     def step(self, time_step, neighbours):
-        if not self.is_scout:
-            v_align = self.align(neighbours)
-            v_cohere = self.cohere(neighbours)
-            v_avoid = self.avoid(neighbours)
-            v_random = self.random_speed()
+        v_align = self.align(neighbours)
+        v_cohere = self.cohere(neighbours)
+        v_avoid = self.avoid(neighbours)
+        v_random = self.random_speed()
 
-            v_new = self.w_ws*v_align + self.w_ws*v_cohere + self.w_ws*v_avoid + self.w_ws*v_random
-            if np.linalg.norm(v_new) > self.a_max:
-                # v_new = (self.a_max)**(1/v_new.size) * (v_new/abs(v_new)) # In paper
-                v_new = v_new * self.a_max / np.linalg.norm(v_new) # My take
+        v_new = self.w_ws*v_align + self.w_ws*v_cohere + self.w_ws*v_avoid + self.w_ws*v_random
+        if np.linalg.norm(v_new) > self.a_max:
+            # v_new = (self.a_max)**(1/v_new.size) * (v_new/abs(v_new)) # In paper
+            v_new = v_new * self.a_max / np.linalg.norm(v_new) # My take
 
-            self.speed = self.speed * self.w_decay + v_new
+        self.speed = self.speed * self.w_decay + v_new
 
+        self.position = self.position + (self.speed * time_step)
+
+
+# ======================================================================
+
+
+class Scout(Bee):
+
+    def __init__(self, id, vision, position, speed):
+        super().__init__(id, vision, position, speed)
+        self.number_scouts = None
+
+        # `streak` or `around`
+        self.mode = 'streak'
+
+    def step(self, time_step, neighbours, number_scout=0):
+        if len(neighbours) < self.number_scouts * 1.5:
+            # Go back to the back of the swarm
+            time_step = -50*time_step
         else:
-            # Basic model, scouts don't update their speed.
             pass
 
         self.position = self.position + (self.speed * time_step)
 
+# ======================================================================
+# ============================ SWARM ===================================
+# ======================================================================
+
 class Swarm:
-    def __init__(self, bees=dict()):
+    def __init__(self, bees=dict(), number_scouts=0):
+        self.size = len(bees.keys())
         self.bees = bees
+        self.number_scouts = number_scouts
         self.recorded_positions = []
+
+    def add_bee(self, bee):
+        self.size += 1
+        self.bees[bee.id] = bee
 
     def initialize_recording(self):
         bee_keys = list(self.bees.keys())
@@ -119,6 +160,22 @@ class Swarm:
                 if np.linalg.norm(bee.position - neighbour_bee.position) <= bee.vision:
                     neighbours.append(neighbour_bee)
         return neighbours
+
+    def inform_scouts_number(self):
+        # Count total number
+        for bee_id, bee in self.bees.items():
+            if isinstance(bee, Scout):
+                self.number_scouts += 1
+
+        # Inform all scouts
+        for bee_id, bee in self.bees.items():
+            if isinstance(bee, Scout):
+                bee.number_scouts = self.number_scouts
+
+
+# ======================================================================
+# ======================= SWARM GENERATION =============================
+# ======================================================================
 
 def generate_swarm(
         start_hive_position, end_hive_position,
@@ -157,11 +214,12 @@ def generate_swarm(
     for index, id in enumerate(ids):
         # Scouts
         if (index < number_scouts):
-            swarm.bees[id] = Bee(id, True, bee_vision, positions[index].reshape((-1,1)), scout_speeds[index].reshape((-1,1)), **kwargs)
+            swarm.add_bee(Scout(id, bee_vision, positions[index].reshape((-1,1)), scout_speeds[index].reshape((-1,1))))
         # Uninformed
         else:
-            swarm.bees[id] = Bee(id, False, bee_vision, positions[index].reshape((-1,1)), speeds[index].reshape((-1,1)), **kwargs)
+            swarm.add_bee(UninformedBee(id, bee_vision, positions[index].reshape((-1,1)), speeds[index].reshape((-1,1)), **kwargs))
 
     swarm.initialize_recording()
+    swarm.inform_scouts_number()
 
     return swarm
