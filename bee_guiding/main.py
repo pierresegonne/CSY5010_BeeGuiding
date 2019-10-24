@@ -35,7 +35,7 @@ W_DECAY = 0.8
 
 # Save file
 SAVE_FLIGHT = True
-SAVE_FLIGHT_NAME = 'swarm_around_basic'
+SAVE_FLIGHT_NAME = 'recordings/swarm_around_basic'
 
 
 # ======================================================================
