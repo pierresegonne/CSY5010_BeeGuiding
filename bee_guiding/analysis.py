@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 
@@ -5,7 +6,7 @@ from utils import *
 
 
 # ============================================
-SWARM_FILENAME = 'recordings/swarm_object 2019-11-15 10-48.pickle'
+SWARM_FILENAME = 'recordings/swarm_object 2019-11-15 14-28.pickle'
 # ============================================
 
 swarm = read_pickled(SWARM_FILENAME)
@@ -69,11 +70,17 @@ plt.title('Average speed of swarm during its flight')
 # ============================================
 # =========== Print convergence ==============
 if swarm.has_converged:
-    print('-- Convergence: {}\n   Distance to target_hive: {}'.format(
+    print('-- Convergence: {0}\n   Distance to target_hive: {1:.2f}'.format(
         barycenters[-1],
         np.linalg.norm(swarm.end_hive_position - barycenters[-1].reshape(-1,1))
         ))
 else:
     print('-- No Convergence.')
+
+
+# ============================================
+# ============= Print density ================
+print('-- Density at the end of the simulation: {0:.6f}'.format(swarm.get_density()))
+
 
 plt.show()

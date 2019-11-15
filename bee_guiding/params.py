@@ -8,17 +8,17 @@ from datetime import datetime
 # ======================================================================
 
 # Run details ==========================
-MAX_ITERATIONS = 300
+MAX_ITERATIONS = 2500
 TIME_STEP = 1
 
 # Swarm Info ==========================
-SWARM_SIZE = 300
+SWARM_SIZE = 200
 PROPORTION_SCOUT = 5 # %
 
 # Space ==========================
-SPACE_DIMENSIONS = (400, 400, 400)
+SPACE_DIMENSIONS = (400, 500, 400)
 OLD_HIVE_POSITION = (200, 200, 200)
-NEW_HIVE_POSITION = (200, 400, 200)
+NEW_HIVE_POSITION = (200, 500, 200)
 
 # Bee specific ==========================
 VISION_RADIUS = 30

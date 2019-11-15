@@ -30,7 +30,8 @@ swarm = populate_swarm(
 for iteration in range(MAX_ITERATIONS):
     converged = swarm.step(TIME_STEP)
     if converged:
-        print('\n----- Swarm converged to new hive before reaching max iterations -----')
+        print('\n----- Swarm converged to new hive before reaching max iterations [{}/{}]-----'.format(
+            iteration + 1, MAX_ITERATIONS))
         print(f'Position of the barycenter of the swarm at convergence: {swarm.get_barycenters()[-1]}')
         break
     if ((iteration + 1) % 100 == 0):

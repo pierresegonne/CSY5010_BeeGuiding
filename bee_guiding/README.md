@@ -14,15 +14,19 @@ Some additions are present, such as the possibility to choose between different 
 
 Running the main file ```main.py``` allows to start the simulation. There is no argument parser, due to the sheer number of different parameters that the model rely on. There instead a parameter file, ```params.py```, which contains all parameters of the model and allow different simulations.
 
+# TESTING
+
+Before running experiments, play around with the parameters for a small hive size (<50). Please try to find what is the critical swarm size below which the guiding does not work.
+
 # EXPERIMENTS
 
-To be able to obtain generalized experimental results, every setting tested must be ran five different times.
+To be able to obtain generalized experimental results, every setting tested must be ran three different times.
 I would advise to generate a video for the first run (```GENERATE_VIDEO=True```) to make sure that everyhing is going according to what is planned, and then remove it to speed up the process.
 To test:
 
 1. Streak behaviour versus subtle guide:
 
-    For both experiments choose swarm ```SWARM_SIZE = 300```, ```OLD_HIVE_POSITION = (200, 200, 200)```, ```NEW_HIVE_POSITION = (200, 2000, 200)```, no braking mechanism (leave blank ``````BRAKING_MODE=''```) and position everywhere ```POSITION_MODE = 'everywhere'``` and 5 000 iterations (it should converge before that)
+    For both experiments choose swarm ```SWARM_SIZE = 300```, ```OLD_HIVE_POSITION = (200, 200, 200)```, ```NEW_HIVE_POSITION = (200, 500, 200)```, no braking mechanism (leave blank ``````BRAKING_MODE=''```) and position everywhere ```POSITION_MODE = 'everywhere'``` and 5 000 iterations (if it converges, it should converge before that: ~2000 iterations)
 
     To set the streaking behaviour use ```SCOUT_BEHAVIOUR = 'streak'``` for scout behaviour
 
@@ -40,7 +44,7 @@ To test:
 
     *   Stationary: set ```BRAKING_MODE='stationary'```. Nothing else to set.
 
-    *   Pheromones: set ```BRAKING_MODE='pheromones'``` with appropriate ```PHEROMONES_MAX_RADIUS``` and ```PHEROMONES_INITIAL_INTENSITY```.
+    *   Pheromones: set ```BRAKING_MODE='pheromones'``` with appropriate ```PHEROMONES_MAX_RADIUS``` and ```PHEROMONES_INITIAL_INTENSITY```. (To test yourselves).
 
 
 The runs will save all the swarm data if ```SAVE_DATA=True```. You can then extract all relevant information running the ```analysis.py``` file while providing the swarm object filename (ex: *recordings/swarm_object 2019-11-14.pickle*).

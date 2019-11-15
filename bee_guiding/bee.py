@@ -28,7 +28,6 @@ class Bee:
 
 
 class UninformedBee(Bee):
-
     def __init__(self, end_hive_position, id, position, speed, vision,
         d_min=4, alpha=0.9, v_max=5, a_max=2, w_ws=2, w_decay=0.9):
         super().__init__(end_hive_position, id, position, speed, vision)
@@ -40,6 +39,7 @@ class UninformedBee(Bee):
         self.w_ws = w_ws
         self.w_decay = w_decay
 
+
     def align(self, neighbours):
         v_align = np.zeros(self.speed.shape)
 
@@ -50,6 +50,7 @@ class UninformedBee(Bee):
 
         return v_align
 
+
     def cohere(self, neighbours):
         v_cohere = np.zeros(self.speed.shape)
 
@@ -59,6 +60,7 @@ class UninformedBee(Bee):
             v_cohere = v_cohere * (1/self.vision) * (1/len(neighbours))
 
         return v_cohere
+
 
     def avoid(self, neighbours):
         v_avoid = np.zeros(self.speed.shape)
@@ -78,6 +80,7 @@ class UninformedBee(Bee):
 
         return v_avoid
 
+
     def random_speed(self):
         lbd = 2
         beta = min(1, max(np.random.exponential(1/lbd, 1), 0)) # Numpy uses scale, inverse rate.
@@ -85,10 +88,12 @@ class UninformedBee(Bee):
         v_random = beta * (v_random/np.abs(v_random))
         return v_random
 
+
     def pheromone_speed(self, pheromones_intensity_from_radius):
         hive_direction = self.end_hive_position - self.position
         return (pheromones_intensity_from_radius(np.linalg.norm(hive_direction))
             * hive_direction / np.linalg.norm(hive_direction))
+
 
 
     def step(self, time_step, neighbours, pheromones_intensity_from_radius=(lambda x: 1)):
@@ -148,6 +153,7 @@ class Scout(Bee):
         self.__finished_around = 0
         self.__min_iteration_two_around = 30
 
+
     def inform_about_swarm(self, swarm_size, number_scouts):
         """
         Adds information about the swarm (total number of scouts & swarm size.
@@ -156,13 +162,16 @@ class Scout(Bee):
         self.swarm_size = swarm_size
         self.number_scouts = number_scouts
 
+
     def compute_around_angle_properties(self):
         self.__around_angle = self.speed_norm / (self.swarm_size/2) * 2 # Hoping the swarm span is swarmsize/2
         self.__max_around_step = int(pi / self.__around_angle) + 1 # 1 probably not necessary
 
+
     def recompute_speed_towards_end_hive(self):
         new_direction = self.end_hive_position - self.position
         self.speed = self.speed_norm * new_direction / np.linalg.norm(new_direction)
+
 
     def step(self, time_step, neighbours, swarm_barycenter):
         super().step()
@@ -206,7 +215,7 @@ class Scout(Bee):
 
 
             if self.__mode == self.__streak_mode:
-                self.recompute_speed_towards_end_hive()
+                # self.recompute_speed_towards_end_hive() # this causes the bees to go stationary. (even though more precise)
                 self.position = self.position + (self.speed * time_step)
 
         # If guiding behaviour, simply goes towards target
@@ -251,9 +260,11 @@ class Swarm:
         self.slowdown_coefficient = slowdown_coefficient
         self.stationary_radius = stationary_radius
 
+
     def add_bee(self, bee):
         self.size += 1
         self.bees[bee.id] = bee
+
 
     def initialize_recording(self):
         new_recording = np.zeros((self.size, self.space_dimension))
@@ -263,8 +274,10 @@ class Swarm:
             new_recording_index += 1
         self.recorded_positions.append(new_recording)
 
+
     def step(self, time_step):
         iterations_before_start = 50
+        # If position mode is top, attribute the scouts their top position after the swarm is formed.
         if self.position_mode == 'top' and self.iteration == iterations_before_start - 1:
             self.reposition_scouts_on_top()
 
@@ -275,8 +288,8 @@ class Swarm:
             neighbours = self.get_neighbours(bee)
             if isinstance(bee, Scout):
                 if not bee.started_moving: # Allow formation of the swarm before scouts move.
-                    if self.iteration > self.iterations_before_start - 1: # Space out beginning of scouts mouvement.
-                        if np.random.rand() < 0.05: # After 20 steps they should start.
+                    if self.iteration > iterations_before_start - 1: # Space out beginning of scouts mouvement.
+                        if np.random.rand() < 0.01: # After 20 steps they should start.
                             bee.started_moving = True
                 if bee.started_moving:
                     bee.step(time_step, neighbours, self.get_barycenters()[-1])
@@ -301,6 +314,7 @@ class Swarm:
         self.has_converged = has_converged
         return has_converged
 
+
     def get_neighbours(self, bee):
         neighbours = []
         for neighbour_bee_id, neighbour_bee in self.bees.items():
@@ -308,6 +322,7 @@ class Swarm:
                 if np.linalg.norm(bee.position - neighbour_bee.position) <= bee.vision:
                     neighbours.append(neighbour_bee)
         return neighbours
+
 
     def inform_scouts_number(self):
         """
@@ -324,11 +339,13 @@ class Swarm:
                 bee.inform_about_swarm(self.size, self.number_scouts)
                 bee.compute_around_angle_properties()
 
+
     def get_barycenters(self):
         """
         Get barycenter of the swarm along its flight.
         """
         return np.mean(np.array(self.recorded_positions), axis=1)
+
 
     def get_average_speeds(self):
         """
@@ -360,14 +377,21 @@ class Swarm:
 
         return self.size / volume
 
+
     def has_crossed_target_plane(self):
-        barycenter = self.get_barycenters()[-1]
+        """
+        Verifies whether the barycenter of the swarm has crossed the plane
+        passing through the target hive, perpendicular to the direction from
+        the origin hive to the target hive.
+        """
+        barycenter = self.get_barycenters()[-1].reshape(-1,1)
         direction = self.end_hive_position - self.start_hive_position
         distance_to_plane = (
-            np.sum(direction * (barycenter - self.end_hive_position))
+            np.sum(direction * (self.end_hive_position - barycenter))
             / np.sqrt(np.sum(direction**2))
         )
-        return (distance_to_plane > -1e-5)
+        return (distance_to_plane < 1e-5)
+
 
     def reposition_scouts_on_top(self, proportion=0.50):
         """
@@ -391,6 +415,7 @@ class Swarm:
                 + ((1 - proportion) * (max_z_positions - median_z_positions))
             )
             self.bees[scout_id].position[2] = new_z_position
+
 
     def scout_braking(self, scout):
 
@@ -425,6 +450,7 @@ class Swarm:
             ((self.pheromones_max_radius/2) + (self.iteration - self.pheromones_spreading_start_iteration))
             /(self.pheromones_max_radius/2),
             10)
+
 
     def get_pheromones_intensity(self):
         """
@@ -479,6 +505,7 @@ def populate_swarm(
     scout_speeds = end_positions - positions[:number_scouts]
     scout_speeds = scout_speed * scout_speeds / np.linalg.norm(scout_speeds, axis=1).reshape(-1, 1)
 
+    # Add all bees to swarm
     for index, id in enumerate(ids):
         # Scouts
         if (index < number_scouts):
