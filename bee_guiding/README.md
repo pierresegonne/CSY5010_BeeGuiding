@@ -6,9 +6,9 @@ Some additions are present, such as the possibility to choose between different 
 
 ### Requirements
 
-    * Numpy
+* Numpy
 
-    * Matplotlib
+* Matplotlib
 
 # INSTRUCTIONS
 
@@ -20,7 +20,7 @@ To be able to obtain generalized experimental results, every setting tested must
 I would advise to generate a video for the first run (```GENERATE_VIDEO=True```) to make sure that everyhing is going according to what is planned, and then remove it to speed up the process.
 To test:
 
-    1. Streak behaviour versus subtle guide:
+1. Streak behaviour versus subtle guide:
 
         For both experiments choose swarm ```SWARM_SIZE = 300```, ```OLD_HIVE_POSITION = (200, 200, 200)```, ```NEW_HIVE_POSITION = (200, 2000, 200)```, no braking mechanism (leave blank ``````BRAKING_MODE=''```) and position everywhere ```POSITION_MODE = 'everywhere'``` and 5 000 iterations (it should converge before that)
 
@@ -28,11 +28,11 @@ To test:
 
         To set the subtle guide use ```SCOUT_BEHAVIOUR = 'guide'``` for behaviour and reduce speed to match the speed of other bees. It will probably not converge with 5% scouts. Try to find the % for which there is convergence.
 
-    2. Top position vs everywhere:
+2. Top position vs everywhere:
 
         To study the influence of starting position, run experiments with previous streak settings, while comparing previous streaking results with new streaking results where position is 'top'
 
-    3. Braking Mechanisms:
+3. Braking Mechanisms:
 
         *   Depop: set ```BRAKING_MODE='depop'``` with a satisfactory depop radius, I would start with ```BRAKING_DEPOP_RADIUS``` around a 100
 
