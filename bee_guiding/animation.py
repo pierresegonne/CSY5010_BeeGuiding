@@ -4,13 +4,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.animation as animation
 
 def update_lines(num, dataLines, lines):
-    # print(num)
-    # print(dataLines)
-    # print(lines)
     for line, data in zip(lines, dataLines):
-        # print(line, data)
-        # print(data[0:2, :3])
-        # exit()
         # NOTE: there is no .set_data() for 3 dim data...
         line.set_data(data[0:2, :num])
         line.set_3d_properties(data[2, :num])
@@ -79,6 +73,8 @@ def show_swarm_flight_scatter(
     total_scout,
     save=False, save_filename='swarm'
     ):
+
+    print('\n-- Generating Video File ... --')
 
     # Attaching 3D axis to the figure
     fig = plt.figure()
