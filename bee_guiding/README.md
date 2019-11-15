@@ -26,7 +26,7 @@ To test:
 
 1. Streak behaviour versus subtle guide:
 
-    For both experiments choose swarm ```SWARM_SIZE = 300```, ```OLD_HIVE_POSITION = (200, 200, 200)```, ```NEW_HIVE_POSITION = (200, 500, 200)```, no braking mechanism (leave blank ``````BRAKING_MODE=''```) and position everywhere ```POSITION_MODE = 'everywhere'``` and 5 000 iterations (if it converges, it should converge before that: ~2000 iterations)
+    For both experiments choose swarm ```SWARM_SIZE = 200```, ```OLD_HIVE_POSITION = (200, 200, 200)```, ```NEW_HIVE_POSITION = (200, 500, 200)```, no braking mechanism (leave blank ``````BRAKING_MODE=''```) and position everywhere ```POSITION_MODE = 'everywhere'``` and 2 500 iterations (if it converges, it should converge before that: ~2000 iterations)
 
     To set the streaking behaviour use ```SCOUT_BEHAVIOUR = 'streak'``` for scout behaviour
 

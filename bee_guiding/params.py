@@ -56,7 +56,7 @@ PHEROMONES_MAX_RADIUS = 100
 PHEROMONES_INITIAL_INTENSITY = 10
 
 # Show Flight video or not ==========================
-GENERATE_VIDEO = True
+GENERATE_VIDEO = False
 
 # Save file
 SAVE_FLIGHT = True
