@@ -1,7 +1,9 @@
 # CUSTOM
 bee_guiding/test*
 *.mp4
-
+*.pickle
+bee_guiding/__pycache__/
+./bee_guiding/__pycache__/bee.cpython-37.pyc
 
 
 # TEMPLATE
