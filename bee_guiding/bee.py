@@ -240,6 +240,7 @@ class Swarm:
         self.end_hive_position = np.array(end_hive_position).reshape(-1,1)
         self.iteration = 0
         self.has_converged = False
+        self.has_converged_iteration = 0
         self.number_scouts = number_scouts
         self.pheromones_initial_intensity = pheromones_initial_intensity
         self.pheromones_max_radius = pheromones_max_radius
@@ -289,6 +290,8 @@ class Swarm:
             if isinstance(bee, Scout):
                 if not bee.started_moving: # Allow formation of the swarm before scouts move.
                     if self.iteration > iterations_before_start - 1: # Space out beginning of scouts mouvement.
+                        if self.scout_behaviour == 'guide':
+                            bee.started_moving = True
                         if np.random.rand() < 0.01: # After 20 steps they should start.
                             bee.started_moving = True
                 if bee.started_moving:
@@ -312,6 +315,8 @@ class Swarm:
         # Check if the swarm has reached the target hive
         has_converged = self.has_crossed_target_plane()
         self.has_converged = has_converged
+        if has_converged:
+            self.has_converged_iteration = self.iteration
         return has_converged
 
 

@@ -6,9 +6,15 @@ Some additions are present, such as the possibility to choose between different 
 
 ### Requirements
 
+Packages:
+
 * Numpy
 
 * Matplotlib
+
+Others:
+
+* ffmepg - [tips](https://github.com/adaptlearning/adapt_authoring/wiki/Installing-FFmpeg) -
 
 # INSTRUCTIONS
 
@@ -50,6 +56,15 @@ To test:
 The runs will save all the swarm data if ```SAVE_DATA=True```. You can then extract all relevant information running the ```analysis.py``` file while providing the swarm object filename (ex: *recordings/swarm_object 2019-11-14.pickle*).
 
 It will plot the trajectory of the barycenter in the planes x,y, x,z and y,z, as well as the evolution of the norm of the speed of the swarm. It will also show in the console the coordinates of the convergence point, if any, with the distance to the old hive.
+
+
+# EXPECTATIONS
+
+1. With realistic settings (i.e 5% scouts), only the streak should converge. Show that by finding that for subtle guide convergence, we need around 20% of scouts.
+
+2. The top should not converge as well as the everywhere, as there is no reinforced influence from bottom to top vision in the updates.
+
+3. Depop, slowdown and stationary shouldn't converge. The swarm should stop right before the hive and stop moving. Pheromones should attract the swarm towards the hive.
 
 
 

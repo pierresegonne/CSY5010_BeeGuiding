@@ -34,7 +34,7 @@ W_DECAY = 0.8
 
 # Braking ==========================
 # Modes
-BRAKING_MODE = '' # 'depop', 'slowdown', 'stationary' or 'pheromones'
+BRAKING_MODE = 'pheromones' # 'depop', 'slowdown', 'stationary' or 'pheromones'
 SCOUT_BEHAVIOUR = 'streak' # 'streak' or 'guide'
 POSITION_MODE = 'everywhere' # 'everywhere' or 'top'
 
@@ -44,19 +44,19 @@ BRAKING_PAPER_RADIUS = 100 * np.linalg.norm(
     - np.array(NEW_HIVE_POSITION).reshape(-1,1)
     ) / 3800
 BRAKING_DEPOP_RADIUS = BRAKING_PAPER_RADIUS * 10
-BRAKING_SLOWDOWN_RADIUS = BRAKING_PAPER_RADIUS * 5
+BRAKING_SLOWDOWN_RADIUS = BRAKING_PAPER_RADIUS * 10
 BRAKING_STATIONARY_RADIUS = 1
 
 # Misc
-BRAKING_DEPOP_PROBABILITY = 0.2
+BRAKING_DEPOP_PROBABILITY = 0.01
 BRAKING_SLOWDOWN_COEFFICIENT = 0.95
 
 # Pheromones ==========================
 PHEROMONES_MAX_RADIUS = 100
-PHEROMONES_INITIAL_INTENSITY = 10
+PHEROMONES_INITIAL_INTENSITY = 50
 
 # Show Flight video or not ==========================
-GENERATE_VIDEO = False
+GENERATE_VIDEO = True
 
 # Save file
 SAVE_FLIGHT = True
